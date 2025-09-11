@@ -9,8 +9,10 @@ export interface User {
 }
 
 export interface AuthResponse {
-  token: string;
+  success: boolean;
   user: User;
+  token?: string;
+  csrfToken?: string;
 }
 
 export interface Product {
@@ -24,7 +26,7 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   login: () => Promise<User>;
-  logout: () => void;
+  logout: () => Promise<void>;
   isAuthenticated: boolean;
   apiRequest: <T = any>(endpoint: string, options?: RequestInit) => Promise<T>;
 }
@@ -46,46 +48,70 @@ class AuthService {
   private baseURL: string = 'https://localhost:8080';
 
   getToken(): string | null {
-    return localStorage.getItem('jwt_token');
+    // With httpOnly cookies, we can't access the token client-side
+    return null;
   }
 
   setToken(token: string): void {
-    localStorage.setItem('jwt_token', token);
+    // With httpOnly cookies, tokens are set by the server
+    // This method is kept for compatibility but does nothing
   }
 
   removeToken(): void {
-    localStorage.removeItem('jwt_token');
+    // With httpOnly cookies, tokens are cleared by the server
+    // This method is kept for compatibility but does nothing
   }
 
   getUser(): User | null {
-    const userStr = localStorage.getItem('user_info');
-    return userStr ? JSON.parse(userStr) : null;
+    // With httpOnly cookies, we can't access user data client-side
+    // User data will be stored in React state only
+    return null;
   }
 
   setUser(user: User): void {
-    localStorage.setItem('user_info', JSON.stringify(user));
+    // With httpOnly cookies, we don't store user data in localStorage
+    // User data will be managed by React state only
   }
 
   removeUser(): void {
-    localStorage.removeItem('user_info');
+    // With httpOnly cookies, we don't store user data in localStorage
+    // User data will be managed by React state only
   }
 
   isAuthenticated(): boolean {
-    const token = this.getToken();
-    if (!token) return false;
+    // With httpOnly cookies, we can't check authentication client-side
+    // Authentication state will be managed by React state only
+    return false;
+  }
 
+  async verifyAuthentication(): Promise<{ isAuthenticated: boolean; user?: User }> {
     try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      return payload.exp * 1000 > Date.now();
-    } catch {
-      return false;
+      // Use the user profile endpoint to verify authentication
+      const profileResponse = await fetch(`${this.baseURL}/api/v1/user/profile`, {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (profileResponse.ok) {
+        const userData = await profileResponse.json();
+        return { isAuthenticated: true, user: userData };
+      }
+      
+      return { isAuthenticated: false };
+    } catch (error) {
+      console.error('Authentication verification failed:', error);
+      return { isAuthenticated: false };
     }
   }
 
   async loginWithGoogle(): Promise<AuthResponse> {
     return new Promise((resolve, reject) => {
+      const frontendOrigin = window.location.origin;
       const popup = window.open(
-        `${this.baseURL}/auth/google?popup=true`,
+        `${this.baseURL}/auth/google?popup=true&origin=${encodeURIComponent(frontendOrigin)}`,
         'googleAuth',
         'width=500,height=600,scrollbars=yes,resizable=yes'
       );
@@ -107,22 +133,38 @@ class AuthService {
           return;
         }
 
+        // Check if message is from the backend
         if (event.origin !== this.baseURL) {
-          console.warn('Message from unexpected origin:', event.origin);
+          console.warn('Message from unexpected origin:', event.origin, 'expected:', this.baseURL);
           return;
         }
 
-        if (event.data.token) {
-          console.log('Token received:', event.data.token);
+        if (event.data.success && event.data.user) {
+          console.log('Authentication successful');
           console.log('User data:', event.data.user);
+          console.log('CSRF token:', event.data.csrfToken);
           
-          this.setToken(event.data.token);
+          // Store CSRF token for API requests
+          if (event.data.csrfToken) {
+            localStorage.setItem('csrf_token', event.data.csrfToken);
+          }
+          
+          // User info is now stored in httpOnly cookies by the backend
+          // We just need to store the user info for the frontend state
           this.setUser(event.data.user);
           
+          // Clean up listeners - popup will be closed by backend
+          clearInterval(checkClosed);
           window.removeEventListener('message', handleMessage);
-          resolve(event.data);
+          
+          resolve({
+            success: true,
+            user: event.data.user,
+            csrfToken: event.data.csrfToken
+          });
         } else if (event.data.error) {
           console.error('Auth error:', event.data.error);
+          clearInterval(checkClosed);
           window.removeEventListener('message', handleMessage);
           reject(new Error(event.data.error));
         } else {
@@ -132,19 +174,42 @@ class AuthService {
 
       window.addEventListener('message', handleMessage);
 
+      // Check if popup is closed
       const checkClosed = setInterval(() => {
         if (popup.closed) {
           clearInterval(checkClosed);
           window.removeEventListener('message', handleMessage);
-          reject(new Error('Authentication cancelled'));
+          reject(new Error('Authentication cancelled - popup was closed'));
         }
       }, 1000);
+
+      // Timeout after 5 minutes
+      setTimeout(() => {
+        clearInterval(checkClosed);
+        window.removeEventListener('message', handleMessage);
+        reject(new Error('Authentication timeout'));
+      }, 300000);
     });
   }
 
-  logout(): void {
-    this.removeToken();
-    this.removeUser();
+  async logout(): Promise<void> {
+    try {
+      // Call backend logout to clear httpOnly cookies
+      await fetch(`${this.baseURL}/auth/logout`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      // Clear frontend state and CSRF token
+      this.removeToken();
+      this.removeUser();
+      localStorage.removeItem('csrf_token');
+    }
   }
 
   async apiRequest<T = any>(endpoint: string, options: RequestInit = {}): Promise<T> {
@@ -153,14 +218,19 @@ class AuthService {
     console.log('Making API request:', {
       endpoint,
       hasToken: !!token,
-      tokenPreview: token ? `${token.substring(0, 20)}...` : 'No token'
+      tokenPreview: token ? `${token.substring(0, 20)}...` : 'No token',
+      isAuthenticated: this.isAuthenticated()
     });
+    
+    // Get CSRF token for additional security
+    const csrfToken = localStorage.getItem('csrf_token');
     
     const config: RequestInit = {
       ...options,
+      credentials: 'include', // Include httpOnly cookies
       headers: {
         'Content-Type': 'application/json',
-        ...(token && { Authorization: `Bearer ${token}` }),
+        ...(csrfToken && { 'X-CSRF-Token': csrfToken }),
         ...options.headers,
       },
     };
@@ -182,11 +252,48 @@ class AuthService {
       throw new Error('Authentication required');
     }
 
+    // Read the response body once
+    const responseText = await response.text();
+    console.log('Response text:', responseText);
+
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      let errorMessage = `HTTP error! status: ${response.status}`;
+      let errorData: any = null;
+      
+      try {
+        if (responseText) {
+          errorData = JSON.parse(responseText);
+          console.error('Error response data:', errorData);
+          errorMessage += ` - ${errorData.message || errorData.error || 'Unknown error'}`;
+        }
+      } catch (e) {
+        console.error('Could not parse error response:', e);
+        if (responseText) {
+          errorMessage += ` - ${responseText}`;
+        }
+      }
+      
+      // Add more specific error handling for common cases
+      if (response.status === 404) {
+        errorMessage = `Resource not found (404): ${endpoint}`;
+      } else if (response.status === 500) {
+        errorMessage = `Server error (500): ${errorData?.message || 'Internal server error'}`;
+      }
+      
+      throw new Error(errorMessage);
     }
 
-    return response.json();
+    // Parse successful response as JSON
+    if (!responseText) {
+      throw new Error('Empty response from server');
+    }
+    
+    try {
+      return JSON.parse(responseText);
+    } catch (jsonError) {
+      console.error('Failed to parse JSON response:', jsonError);
+      throw new Error('Invalid JSON response from server');
+    }
   }
 }
 
@@ -197,18 +304,39 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    if (authService.isAuthenticated()) {
-      const userData = authService.getUser();
-      setUser(userData);
-    }
-    setLoading(false);
+    const checkAuthentication = async () => {
+      try {
+        console.log('Checking authentication status...');
+        
+        // Verify authentication with the backend using httpOnly cookies
+        const { isAuthenticated, user } = await authService.verifyAuthentication();
+        
+        if (isAuthenticated && user) {
+          console.log('User authenticated:', user);
+          setUser(user);
+        } else {
+          console.log('No authentication found');
+          setUser(null);
+        }
+      } catch (error) {
+        console.error('Authentication check failed:', error);
+        setUser(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkAuthentication();
   }, []);
 
   const login = async (): Promise<User> => {
     try {
       setLoading(true);
       const { user: userData } = await authService.loginWithGoogle();
+      
+      // Set user in React state only (no localStorage with httpOnly cookies)
       setUser(userData);
+      
       return userData;
     } catch (error) {
       console.error('Login failed:', error);
@@ -218,8 +346,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
-  const logout = (): void => {
-    authService.logout();
+  const logout = async (): Promise<void> => {
+    await authService.logout();
     setUser(null);
   };
 
