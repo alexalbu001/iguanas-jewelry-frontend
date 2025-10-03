@@ -27,7 +27,7 @@ export class ErrorBoundary extends Component<Props, State> {
     console.error('ErrorBoundary caught an error:', error, errorInfo);
     
     // In production, you might want to log to an error reporting service
-    // logErrorToService(error, errorInfo);
+    // LogErrorToService(error, errorInfo);
     
     this.setState({
       error,

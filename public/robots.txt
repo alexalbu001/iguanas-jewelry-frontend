@@ -1,3 +1,82 @@
+# Iguanas Jewelry - robots.txt
 # https://www.robotstxt.org/robotstxt.html
+
+# Allow all search engines to crawl the site
 User-agent: *
-Disallow:
+Allow: /
+
+# Disallow crawling of admin and private areas
+Disallow: /admin/
+Disallow: /api/
+Disallow: /auth/
+Disallow: /checkout/
+Disallow: /orders/
+Disallow: /profile/
+Disallow: /favorites/
+Disallow: /cart/
+
+# Disallow crawling of development and debug files
+Disallow: /debug/
+Disallow: /test/
+Disallow: /*.json$
+Disallow: /*.xml$
+Disallow: /static/js/
+Disallow: /static/css/
+
+# Disallow crawling of user-specific content
+Disallow: /user/
+Disallow: /account/
+Disallow: /settings/
+
+# Disallow crawling of search and filter parameters
+Disallow: /*?*
+Disallow: /*&*
+Disallow: /search*
+Disallow: /filter*
+
+# Disallow crawling of temporary and cache files
+Disallow: /tmp/
+Disallow: /cache/
+Disallow: /temp/
+
+# Allow crawling of important pages for SEO
+Allow: /products/
+Allow: /product/
+Allow: /categories/
+Allow: /about/
+Allow: /contact/
+Allow: /privacy/
+Allow: /terms/
+Allow: /sitemap.xml
+
+# Specific rules for major search engines
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 1
+
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 1
+
+User-agent: Slurp
+Allow: /
+Crawl-delay: 2
+
+# Block bad bots and scrapers
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: DotBot
+Disallow: /
+
+User-agent: SemrushBot
+Disallow: /
+
+User-agent: BLEXBot
+Disallow: /
+
+# Sitemap location
+Sitemap: https://iguanas-jewelry.com/sitemap.xml

@@ -45,7 +45,17 @@ const AuthContext = createContext<AuthContextType | null>(null);
 
 // Auth Service - handles token storage and API calls
 class AuthService {
-  private baseURL: string = 'https://localhost:8080';
+  private baseURL: string = process.env.REACT_APP_API_URL || 'https://localhost:8080';
+
+  // Helper function to read cookies
+  private getCookie(name: string): string | null {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) {
+      return parts.pop()?.split(';').shift() || null;
+    }
+    return null;
+  }
 
   getToken(): string | null {
     // With httpOnly cookies, we can't access the token client-side
@@ -144,10 +154,8 @@ class AuthService {
           console.log('User data:', event.data.user);
           console.log('CSRF token:', event.data.csrfToken);
           
-          // Store CSRF token for API requests
-          if (event.data.csrfToken) {
-            localStorage.setItem('csrf_token', event.data.csrfToken);
-          }
+          // CSRF token is now stored in cookies by the backend
+          // No need to store it in localStorage
           
           // User info is now stored in httpOnly cookies by the backend
           // We just need to store the user info for the frontend state
@@ -208,7 +216,7 @@ class AuthService {
       // Clear frontend state and CSRF token
       this.removeToken();
       this.removeUser();
-      localStorage.removeItem('csrf_token');
+      // CSRF token is cleared by the backend when cookies are cleared
     }
   }
 
@@ -222,8 +230,8 @@ class AuthService {
       isAuthenticated: this.isAuthenticated()
     });
     
-    // Get CSRF token for additional security
-    const csrfToken = localStorage.getItem('csrf_token');
+    // Get CSRF token from cookie for additional security
+    const csrfToken = this.getCookie('csrf_token');
     
     const config: RequestInit = {
       ...options,

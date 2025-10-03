@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
+        http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
+
+  <!-- Homepage -->
+  <url>
+    <loc>https://iguanas-jewelry.com/</loc>
+    <lastmod>2024-01-15</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+  <!-- Main Product Categories -->
+  <url>
+    <loc>https://iguanas-jewelry.com/category/rings</loc>
+    <lastmod>2024-01-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://iguanas-jewelry.com/category/earrings</loc>
+    <lastmod>2024-01-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://iguanas-jewelry.com/category/bracelets</loc>
+    <lastmod>2024-01-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://iguanas-jewelry.com/category/necklaces</loc>
+    <lastmod>2024-01-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- Sample Product Pages (you'll need to dynamically generate these) -->
+  <url>
+    <loc>https://iguanas-jewelry.com/product/classic-gold-wedding-ring</loc>
+    <lastmod>2024-01-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://iguanas-jewelry.com/images/products/classic-gold-wedding-ring-main.jpg</image:loc>
+      <image:title>Classic Gold Wedding Ring</image:title>
+      <image:caption>18k gold classic wedding band with polished finish</image:caption>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://iguanas-jewelry.com/product/diamond-stud-earrings</loc>
+    <lastmod>2024-01-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://iguanas-jewelry.com/images/products/diamond-stud-earrings-main.jpg</image:loc>
+      <image:title>Diamond Stud Earrings</image:title>
+      <image:caption>1 carat total weight diamond studs in 14k white gold</image:caption>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://iguanas-jewelry.com/product/cultured-pearl-necklace</loc>
+    <lastmod>2024-01-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://iguanas-jewelry.com/images/products/cultured-pearl-necklace-main.jpg</image:loc>
+      <image:title>Cultured Pearl Necklace</image:title>
+      <image:caption>18-inch strand of AAA cultured freshwater pearls</image:caption>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://iguanas-jewelry.com/product/sterling-silver-chain-bracelet</loc>
+    <lastmod>2024-01-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://iguanas-jewelry.com/images/products/sterling-silver-chain-bracelet-main.jpg</image:loc>
+      <image:title>Sterling Silver Chain Bracelet</image:title>
+      <image:caption>Elegant sterling silver link bracelet with lobster clasp</image:caption>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://iguanas-jewelry.com/product/blue-sapphire-engagement-ring</loc>
+    <lastmod>2024-01-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://iguanas-jewelry.com/images/products/blue-sapphire-engagement-ring-main.jpg</image:loc>
+      <image:title>Blue Sapphire Engagement Ring</image:title>
+      <image:caption>2 carat blue sapphire with diamond accents in platinum</image:caption>
+    </image:image>
+  </url>
+
+  <!-- Static Pages -->
+  <url>
+    <loc>https://iguanas-jewelry.com/privacy-policy</loc>
+    <lastmod>2024-01-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+  </url>
+
+  <url>
+    <loc>https://iguanas-jewelry.com/terms-of-service</loc>
+    <lastmod>2024-01-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+  </url>
+
+  <url>
+    <loc>https://iguanas-jewelry.com/data-management</loc>
+    <lastmod>2024-01-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.2</priority>
+  </url>
+
+  <!-- User Account Pages (lower priority, require authentication) -->
+  <url>
+    <loc>https://iguanas-jewelry.com/favorites</loc>
+    <lastmod>2024-01-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.4</priority>
+  </url>
+
+  <url>
+    <loc>https://iguanas-jewelry.com/orders</loc>
+    <lastmod>2024-01-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.4</priority>
+  </url>
+
+  <!-- Checkout Process (lower priority, not for SEO) -->
+  <url>
+    <loc>https://iguanas-jewelry.com/checkout</loc>
+    <lastmod>2024-01-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.1</priority>
+  </url>
+
+</urlset>

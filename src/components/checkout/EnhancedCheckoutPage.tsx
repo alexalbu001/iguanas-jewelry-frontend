@@ -95,7 +95,8 @@ export const EnhancedCheckoutPage: React.FC = () => {
       return;
     }
     
-    if (cart.items.length === 0) {
+    // Ensure cart.items exists and is an array before checking length
+    if (!cart.items || !Array.isArray(cart.items) || cart.items.length === 0) {
       addToast({
         type: 'warning',
         title: 'Empty Cart',
@@ -114,7 +115,7 @@ export const EnhancedCheckoutPage: React.FC = () => {
       console.log('Stripe configured, using real payment integration');
       setUseDevMode(false);
     }
-  }, [isAuthenticated, cart.items.length, cartLoading, navigate, addToast]);
+  }, [isAuthenticated, cart.items, cartLoading, navigate, addToast]);
 
   // Cart is already loaded when component mounts, no need for periodic refresh
 
@@ -158,7 +159,7 @@ export const EnhancedCheckoutPage: React.FC = () => {
   };
 
   const validateCart = (): boolean => {
-    if (cart.items.length === 0) {
+    if (!cart.items || !Array.isArray(cart.items) || cart.items.length === 0) {
       setError('Your cart is empty. Please add items before proceeding.');
       addToast({
         type: 'error',
@@ -198,7 +199,7 @@ export const EnhancedCheckoutPage: React.FC = () => {
     try {
       console.log('Creating order and payment intent...');
       console.log('Shipping info:', shippingInfo);
-      console.log('Cart items:', cart.items);
+      console.log('Cart items:', cart.items || []);
       
       // Create order and get payment intent
       const response = await apiRequest<OrderData>('/api/v1/orders/checkout', {
@@ -310,7 +311,7 @@ export const EnhancedCheckoutPage: React.FC = () => {
     );
   }
 
-  if (cart.items.length === 0) {
+  if (!cart.items || !Array.isArray(cart.items) || cart.items.length === 0) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -567,7 +568,7 @@ export const EnhancedCheckoutPage: React.FC = () => {
           <div className="bg-white rounded-lg shadow-lg p-6">
             <h2 className="text-xl font-serif text-iguana-800 mb-6">Order Summary</h2>
             
-            {orderData ? (
+            {orderData && orderData.order && orderData.order.OrderItems ? (
               <div className="space-y-4">
                 <div className="space-y-3">
                   {orderData.order.OrderItems.map((item) => (
@@ -591,8 +592,8 @@ export const EnhancedCheckoutPage: React.FC = () => {
             ) : (
               <div className="space-y-4">
                 <div className="space-y-3">
-                  {cart.items.map((item) => (
-                    <div key={item.id} className="flex justify-between items-center py-2 border-b border-gray-100">
+                  {cart.items && Array.isArray(cart.items) && cart.items.map((item) => (
+                    <div key={item.id || item.cart_item_id} className="flex justify-between items-center py-2 border-b border-gray-100">
                       <div>
                         <p className="font-medium text-gray-900">{item.product_name || item.product?.name || 'Unknown Product'}</p>
                         <p className="text-sm text-gray-500">Qty: {item.quantity}</p>
@@ -605,7 +606,7 @@ export const EnhancedCheckoutPage: React.FC = () => {
                 <div className="pt-4 border-t border-gray-200">
                   <div className="flex justify-between items-center text-lg font-semibold">
                     <span>Total</span>
-                    <span>${cart.total.toFixed(2)}</span>
+                    <span>${(cart.total || 0).toFixed(2)}</span>
                   </div>
                 </div>
               </div>
